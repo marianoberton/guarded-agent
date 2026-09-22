@@ -4,6 +4,7 @@ import { evaluate } from "../policies/index.js";
 import { ToolInputError, type Tool, type ToolContext } from "../tools/defineTool.js";
 import type { ProviderMessage, ToolCall } from "../providers/types.js";
 import type { Answers } from "../classify/types.js";
+import type { SendPlan } from "../channels/types.js";
 import type { Policy, Verdict } from "../policies/types.js";
 import type {
   ConversationState,
@@ -39,6 +40,13 @@ export async function runTurn(
     messages: [...state.messages, { role: "user", text: inbound.text, at: inbound.at }],
     lastCustomerMessageAt: inbound.at,
   };
+
+  // The customer writing is what reopens a shut window, so this has to happen
+  // before the gates rather than as part of sending.
+  if (next.status === "awaiting_reopen") {
+    next = { ...next, status: "agent" };
+    trace.note("window", "code", "reopened");
+  }
 
   // --- preCheck: gates, no model ---------------------------------------------
   // The inbound is already on the conversation, so a person taking over sees
@@ -179,6 +187,30 @@ export async function runTurn(
     text = after.verdict.text;
   } else if (after.verdict.type !== "allow") {
     return terminalVerdict(next, after.verdict, after.policy?.name ?? "policy", trace, "after");
+  }
+
+  // --- channel: the transport's own rules, enforced by the runtime ------------
+  const plan: SendPlan = deps.channel
+    ? deps.channel.plan({ state: next, text, now: deps.now() })
+    : { type: "free_form", text };
+
+  if (plan.type === "deferred") {
+    // Nothing was sent. Saying so in the trace is the difference between a
+    // deferred message and an agent that appears to have answered.
+    trace.note("send", "code", `deferred:${plan.reason}`, { chars: text.length });
+    return { state: next, actions: [], trace: trace.build() };
+  }
+
+  if (plan.type === "template") {
+    trace.note("send", "code", `template:${plan.template}`, { reason: plan.reason });
+    return {
+      state: { ...next, status: "awaiting_reopen" },
+      actions: [
+        { type: "sendTemplate", template: plan.template, pendingText: text, reason: plan.reason },
+        { type: "setStatus", status: "awaiting_reopen", reason: plan.reason },
+      ],
+      trace: trace.build(),
+    };
   }
 
   next = {

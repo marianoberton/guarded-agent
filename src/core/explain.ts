@@ -72,9 +72,16 @@ function confidence(value: number | undefined): string {
 
 function renderActions(turn: StoredTurn): string {
   if (turn.actions.length === 0) return "actions: (none)";
-  const rendered = turn.actions.map((action) =>
-    action.type === "send" ? "send" : `setStatus:${action.status}(${action.reason})`,
-  );
+  const rendered = turn.actions.map((action) => {
+    switch (action.type) {
+      case "send":
+        return "send";
+      case "sendTemplate":
+        return `sendTemplate:${action.template}(${action.reason})`;
+      case "setStatus":
+        return `setStatus:${action.status}(${action.reason})`;
+    }
+  });
   return `actions: ${rendered.join(", ")}`;
 }
 

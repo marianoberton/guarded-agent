@@ -121,9 +121,18 @@ async function main(): Promise<void> {
 
   console.log(`\n> ${question}\n`);
   for (const action of result.actions) {
-    console.log(
-      action.type === "send" ? action.text : `[status -> ${action.status}: ${action.reason}]`,
-    );
+    switch (action.type) {
+      case "send":
+        console.log(action.text);
+        break;
+      case "sendTemplate":
+        console.log(`[window shut (${action.reason}) -> template "${action.template}"]`);
+        console.log(`[not sent: ${action.pendingText}]`);
+        break;
+      case "setStatus":
+        console.log(`[status -> ${action.status}: ${action.reason}]`);
+        break;
+    }
   }
 
   console.log(`\n--- explain(${turnId.slice(0, 8)}) ---`);

@@ -3,6 +3,7 @@ import type { Classifier } from "../classify/types.js";
 import type { Tool } from "../tools/defineTool.js";
 import type { Guard } from "../guards/types.js";
 import type { Policy } from "../policies/types.js";
+import type { Channel } from "../channels/types.js";
 
 export type Role = "user" | "assistant" | "human";
 
@@ -38,6 +39,11 @@ export interface Inbound {
  */
 export type Action =
   | { type: "send"; text: string }
+  /**
+   * The window was shut, so an approved template goes out instead. The reply
+   * the agent had written travels with it rather than being dropped.
+   */
+  | { type: "sendTemplate"; template: string; pendingText: string; reason: string }
   | { type: "setStatus"; status: ConversationStatus; reason: string };
 
 /** Who made a decision. The whole point of the library is that this is recorded. */
@@ -83,6 +89,8 @@ export interface TurnDeps {
   guards?: readonly Guard[];
   /** Inspect and veto proposed actions. Evaluated in declaration order. */
   policies?: readonly Policy[];
+  /** Transport rules. Without one, every reply is free-form. */
+  channel?: Channel;
   tools: readonly Tool[];
   now: () => number;
   newId: () => string;

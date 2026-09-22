@@ -52,6 +52,18 @@ export type {
   Verdict,
 } from "./policies/types.js";
 
+// --- channels -----------------------------------------------------------------
+export { WebChannel, WhatsAppChannel } from "./channels/index.js";
+export { DEFAULT_WINDOW_HOURS, hoursToMs, isWindowOpen, windowState } from "./channels/index.js";
+export type {
+  Channel,
+  PlanInput,
+  SendPlan,
+  WhatsAppChannelOptions,
+  WhatsAppTemplates,
+  WindowState,
+} from "./channels/index.js";
+
 // --- providers ----------------------------------------------------------------
 export { OpenRouterProvider } from "./providers/openrouter.js";
 export { JevProvider } from "./providers/jev.js";
