@@ -31,7 +31,7 @@ async function main(): Promise<void> {
       newId: () => randomUUID(),
       config: {
         system: SYSTEM_PROMPT,
-        model: process.env["RESPONDER_MODEL"] ?? "anthropic/claude-sonnet-4.6",
+        model: process.env["RESPONDER_MODEL"] ?? "google/gemini-2.5-flash-lite",
         maxTokens: 1024,
         maxToolIterations: 5,
       },

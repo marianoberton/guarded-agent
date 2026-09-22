@@ -36,7 +36,8 @@
     "test:watch": "vitest",
     "lint": "eslint src examples tests",
     "format": "prettier --write .",
-    "example": "tsx examples/dealership/index.ts"
+    "example": "tsx examples/dealership/index.ts",
+    "compare": "tsx examples/dealership/compare.ts"
   },
   "dependencies": {
     "zod": "^4.6.5"
