@@ -1,6 +1,7 @@
 import type { Completion, CompletionRequest, Usage } from "../providers/types.js";
 import type { Classifier } from "../classify/types.js";
 import type { Tool } from "../tools/defineTool.js";
+import type { Guard } from "../guards/types.js";
 
 export type Role = "user" | "assistant" | "human";
 
@@ -81,6 +82,8 @@ export interface TurnConfig {
 export interface TurnDeps {
   llm: LlmFn;
   classifier?: Classifier;
+  /** Deterministic gates, run before any model is consulted. */
+  guards?: readonly Guard[];
   tools: readonly Tool[];
   now: () => number;
   newId: () => string;

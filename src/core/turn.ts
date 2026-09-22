@@ -1,4 +1,5 @@
 import { TraceBuilder } from "./trace.js";
+import { preCheck } from "../guards/index.js";
 import { ToolInputError, type Tool, type ToolContext } from "../tools/defineTool.js";
 import type { ProviderMessage } from "../providers/types.js";
 import type {
@@ -34,6 +35,16 @@ export async function runTurn(
     messages: [...state.messages, { role: "user", text: inbound.text, at: inbound.at }],
     lastCustomerMessageAt: inbound.at,
   };
+
+  // --- preCheck: gates, no model ---------------------------------------------
+  // The inbound is already on the conversation, so a person taking over sees
+  // everything that arrived while the agent stayed out of it.
+  const gate = preCheck(deps.guards ?? [], { state: next, inbound, now: deps.now() });
+  if (gate.type === "skip") {
+    trace.note("preCheck", "code", `skipped:${gate.reason}`, gate.detail);
+    return { state: next, actions, trace: trace.build() };
+  }
+  trace.note("preCheck", "code", "ok");
 
   // --- classify: bounded forks, one request, all questions in parallel --------
   if (deps.classifier) {

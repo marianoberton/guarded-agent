@@ -37,7 +37,9 @@
     "lint": "eslint src examples tests",
     "format": "prettier --write .",
     "example": "tsx examples/dealership/index.ts",
-    "compare": "tsx examples/dealership/compare.ts"
+    "compare": "tsx examples/dealership/compare.ts",
+    "ping": "tsx examples/jev-ping.ts",
+    "test:live": "vitest run --config vitest.live.config.ts"
   },
   "dependencies": {
     "zod": "^4.6.5"

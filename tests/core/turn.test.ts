@@ -57,7 +57,7 @@ describe("runTurn", () => {
     );
 
     expect(result.actions).toEqual([{ type: "send", text: "Hi there." }]);
-    expect(result.trace.map((e) => e.step)).toEqual(["respond", "send"]);
+    expect(result.trace.map((e) => e.step)).toEqual(["preCheck", "respond", "send"]);
     expect(result.state.messages.at(-1)).toMatchObject({ role: "assistant", text: "Hi there." });
     expect(result.state.lastCustomerMessageAt).toBe(1_000);
   });
