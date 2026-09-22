@@ -107,9 +107,9 @@ describe("rateLimit", () => {
       ],
     };
 
-    expect(
-      rateLimit({ max: 2, windowMs: 500 }).check(ctx({ state, now: 10_000 })),
-    ).toEqual({ type: "proceed" });
+    expect(rateLimit({ max: 2, windowMs: 500 }).check(ctx({ state, now: 10_000 }))).toEqual({
+      type: "proceed",
+    });
   });
 });
 

@@ -6,14 +6,16 @@ import {
   JevClassifier,
   JevProvider,
   LlmClassifier,
+  jev,
   MemoryStore,
   OpenRouterProvider,
+  policies,
   runTurn,
   standardGuards,
 } from "../../src/index.js";
 import type { Classifier } from "../../src/index.js";
 import { DEALERSHIP_QUESTIONS } from "./questions.js";
-import { DEALERSHIP_TOOLS, SYSTEM_PROMPT } from "./tools.js";
+import { DEALERSHIP_TOOLS, sendQuote, SYSTEM_PROMPT } from "./tools.js";
 
 /**
  * The three colours in one turn.
@@ -37,22 +39,25 @@ async function main(): Promise<void> {
   const model = process.env["RESPONDER_MODEL"] ?? "google/gemini-2.5-flash-lite";
   const store = new MemoryStore();
 
+  const jevClient = new JevProvider({
+    apiKey,
+    ...(process.env["JEV_BASE_URL"] ? { baseUrl: process.env["JEV_BASE_URL"] } : {}),
+    ...(process.env["JEV_MODEL"] ? { model: process.env["JEV_MODEL"] } : {}),
+    zdr: process.env["JEV_ZDR"] !== "false",
+    appName: "guarded-agent/dealership",
+  });
+
   // The one-line swap the spec promises. Both sides answer the same question
   // map and return the same shapes; only the decider changes, and the trace
   // records which one it was.
   const classifier: Classifier =
     process.env["CLASSIFIER"] === "llm"
-      ? new LlmClassifier({ llm: (req) => provider.complete(req), model, questions: DEALERSHIP_QUESTIONS })
-      : new JevClassifier({
-          jev: new JevProvider({
-            apiKey,
-            ...(process.env["JEV_BASE_URL"] ? { baseUrl: process.env["JEV_BASE_URL"] } : {}),
-            ...(process.env["JEV_MODEL"] ? { model: process.env["JEV_MODEL"] } : {}),
-            zdr: process.env["JEV_ZDR"] !== "false",
-            appName: "guarded-agent/dealership",
-          }),
+      ? new LlmClassifier({
+          llm: (req) => provider.complete(req),
+          model,
           questions: DEALERSHIP_QUESTIONS,
-        });
+        })
+      : new JevClassifier({ jev: jevClient, questions: DEALERSHIP_QUESTIONS });
 
   const conversationId = "demo-1";
   const state = (await store.load(conversationId)) ?? emptyConversation(conversationId);
@@ -71,6 +76,31 @@ async function main(): Promise<void> {
         // too fresh. A deployment wants it on — see the express example (M4).
         rateLimit: { max: 10, windowMs: 60_000 },
       }),
+      policies: [
+        // Cheapest first: a choice already computed this turn costs nothing to
+        // read, while riskGate costs a request. No point paying for a risk
+        // score on a conversation that was going to a person anyway.
+        policies.escalateWhen({ intent: "price_negotiation" }),
+        policies.escalateWhen({ intent: "asks_for_human" }),
+        policies.escalateWhen({ noul: "needs_human", above: 0.85 }),
+        policies.veto({
+          tool: sendQuote,
+          when: (c) => c.args.discountPct > 10,
+          reason: "discount_over_10",
+        }),
+        policies.riskGate({
+          jev: jevClient,
+          question: jev.noul(
+            "Is this action something the business would not want done automatically?",
+          ),
+          blockAbove: 0.8,
+          escalateAbove: 0.5,
+        }),
+        policies.maxTurnsWithoutProgress(4),
+        // Last line of defence: a model that writes "descuento" has made a
+        // promise regardless of what the prompt said.
+        policies.notContains(["descuento", "discount"]),
+      ],
       tools: DEALERSHIP_TOOLS,
       now: () => Date.now(),
       newId: () => randomUUID(),
@@ -97,14 +127,16 @@ async function main(): Promise<void> {
   }
 
   console.log(`\n--- explain(${turnId.slice(0, 8)}) ---`);
-  console.log(explain({
-    id: turnId,
-    conversationId,
-    at,
-    inbound: question,
-    actions: result.actions,
-    trace: result.trace,
-  }));
+  console.log(
+    explain({
+      id: turnId,
+      conversationId,
+      at,
+      inbound: question,
+      actions: result.actions,
+      trace: result.trace,
+    }),
+  );
 }
 
 main().catch((error: unknown) => {

@@ -17,7 +17,11 @@ export interface RetryOptions {
 const defaultSleep = (ms: number): Promise<void> =>
   new Promise((resolve) => setTimeout(resolve, ms));
 
-export function backoffMs(attempt: number, retryAfter: string | null, random: () => number): number {
+export function backoffMs(
+  attempt: number,
+  retryAfter: string | null,
+  random: () => number,
+): number {
   if (retryAfter) {
     const seconds = Number.parseFloat(retryAfter);
     if (Number.isFinite(seconds)) return Math.min(seconds, 30) * 1000;

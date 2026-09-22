@@ -15,7 +15,10 @@ const questions: QuestionMap = {
   urgency: score("How urgent is this?", ["Not at all", "Somewhat", "Very"]),
 };
 
-function classifierWith(text: string): { classifier: LlmClassifier; llm: ReturnType<typeof stubLlm> } {
+function classifierWith(text: string): {
+  classifier: LlmClassifier;
+  llm: ReturnType<typeof stubLlm>;
+} {
   const llm = stubLlm([completion({ text })]);
   return {
     llm,

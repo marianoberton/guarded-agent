@@ -35,9 +35,7 @@ export async function explainTurn(store: Store, turnId: string): Promise<string 
 
 function renderEntry(entry: TraceEntry): string {
   const cost = entry.costUsd !== undefined ? `  $${entry.costUsd.toFixed(6)}` : "";
-  const tokens = entry.usage
-    ? `  ${entry.usage.inputTokens}in/${entry.usage.outputTokens}out`
-    : "";
+  const tokens = entry.usage ? `  ${entry.usage.inputTokens}in/${entry.usage.outputTokens}out` : "";
   return `${entry.by.padEnd(4)}  ${entry.step.padEnd(22)} ${entry.outcome.padEnd(20)} ${`${entry.latencyMs}ms`.padStart(8)}${tokens}${cost}`;
 }
 
@@ -50,8 +48,8 @@ function renderAnswers(entry: TraceEntry): string[] {
   const answers = entry.detail?.["answers"];
   if (!answers || typeof answers !== "object") return [];
 
-  return Object.entries(answers as Record<string, Answer>).map(([key, answer]) =>
-    `        ${key.padEnd(18)} ${renderAnswer(answer)}`,
+  return Object.entries(answers as Record<string, Answer>).map(
+    ([key, answer]) => `        ${key.padEnd(18)} ${renderAnswer(answer)}`,
   );
 }
 

@@ -64,7 +64,12 @@ describe("JevProvider.decide", () => {
       vi.fn(async () =>
         jsonResponse({
           answers: {
-            intent: { type: "choice", choice: "stock", probabilities: { stock: 0.94 }, confidence: 0.94 },
+            intent: {
+              type: "choice",
+              choice: "stock",
+              probabilities: { stock: 0.94 },
+              confidence: 0.94,
+            },
             needs_human: { type: "noul", noul: 0.07 },
           },
           usage: { input_tokens: 1400, output_tokens: 0 },
@@ -96,7 +101,10 @@ describe("JevProvider.decide", () => {
   it("rejects a response with no answers rather than returning an empty map", async () => {
     // Silently returning {} would make every policy read 0 and quietly do
     // nothing, which is far worse than a loud failure.
-    vi.stubGlobal("fetch", vi.fn(async () => jsonResponse({ error: "bad model" })));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => jsonResponse({ error: "bad model" })),
+    );
 
     await expect(new JevProvider({ apiKey: "k", maxRps: 0 }).decide({}, {})).rejects.toThrow(
       ProviderError,

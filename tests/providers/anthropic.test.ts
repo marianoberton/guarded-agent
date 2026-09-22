@@ -44,7 +44,11 @@ describe("toAnthropicMessages", () => {
 
   it("emits text and tool_use blocks for an assistant turn", () => {
     const out = toAnthropicMessages([
-      { role: "assistant", content: "Checking.", toolCalls: [{ id: "t1", name: "f", args: { x: 1 } }] },
+      {
+        role: "assistant",
+        content: "Checking.",
+        toolCalls: [{ id: "t1", name: "f", args: { x: 1 } }],
+      },
     ]);
 
     expect(out[0]).toEqual({

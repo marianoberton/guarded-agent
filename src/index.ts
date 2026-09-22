@@ -2,6 +2,14 @@
 export { runTurn, emptyConversation } from "./core/turn.js";
 export { TraceBuilder } from "./core/trace.js";
 export { explain, explainTurn } from "./core/explain.js";
+export {
+  acceptHandoff,
+  appendHumanMessage,
+  releaseHandoff,
+  releaseIfInactive,
+  requestHandoff,
+} from "./core/takeover.js";
+export type { Transition } from "./core/takeover.js";
 export type {
   Action,
   ConversationState,
@@ -33,6 +41,17 @@ export {
 } from "./guards/index.js";
 export type { Guard, GuardContext, GuardVerdict } from "./guards/types.js";
 
+// --- policies -----------------------------------------------------------------
+export * as policies from "./policies/index.js";
+export { allow, block, escalate, rewrite } from "./policies/types.js";
+export type {
+  ActionContext,
+  AfterContext,
+  BeforeContext,
+  Policy,
+  Verdict,
+} from "./policies/types.js";
+
 // --- providers ----------------------------------------------------------------
 export { OpenRouterProvider } from "./providers/openrouter.js";
 export { JevProvider } from "./providers/jev.js";
@@ -54,13 +73,7 @@ export type {
 export { LlmClassifier } from "./classify/LlmClassifier.js";
 export { JevClassifier } from "./classify/JevClassifier.js";
 export { readChoice, readNoul, readScore } from "./classify/types.js";
-export type {
-  Answer,
-  Answers,
-  Classifier,
-  Question,
-  QuestionMap,
-} from "./classify/types.js";
+export type { Answer, Answers, Classifier, Question, QuestionMap } from "./classify/types.js";
 export * as jev from "./jev/index.js";
 
 // --- stores -------------------------------------------------------------------

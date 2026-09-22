@@ -8,8 +8,7 @@ export interface GuardContext {
 }
 
 export type GuardVerdict =
-  | { type: "proceed" }
-  | { type: "skip"; reason: string; detail?: Record<string, unknown> };
+  { type: "proceed" } | { type: "skip"; reason: string; detail?: Record<string, unknown> };
 
 /**
  * A gate that runs before any model is consulted.

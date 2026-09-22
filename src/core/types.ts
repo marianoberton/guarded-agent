@@ -2,6 +2,7 @@ import type { Completion, CompletionRequest, Usage } from "../providers/types.js
 import type { Classifier } from "../classify/types.js";
 import type { Tool } from "../tools/defineTool.js";
 import type { Guard } from "../guards/types.js";
+import type { Policy } from "../policies/types.js";
 
 export type Role = "user" | "assistant" | "human";
 
@@ -13,11 +14,7 @@ export interface Message {
 }
 
 export type ConversationStatus =
-  | "agent"
-  | "handoff_requested"
-  | "human"
-  | "awaiting_reopen"
-  | "paused";
+  "agent" | "handoff_requested" | "human" | "awaiting_reopen" | "paused";
 
 export interface ConversationState {
   id: string;
@@ -84,6 +81,8 @@ export interface TurnDeps {
   classifier?: Classifier;
   /** Deterministic gates, run before any model is consulted. */
   guards?: readonly Guard[];
+  /** Inspect and veto proposed actions. Evaluated in declaration order. */
+  policies?: readonly Policy[];
   tools: readonly Tool[];
   now: () => number;
   newId: () => string;

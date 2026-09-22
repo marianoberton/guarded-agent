@@ -73,7 +73,9 @@ export function toAnthropicPayload(req: CompletionRequest): Record<string, unkno
  * message. Emitting one message per result is an API error, and splitting them
  * teaches the model to stop issuing calls in parallel.
  */
-export function toAnthropicMessages(messages: readonly ProviderMessage[]): Record<string, unknown>[] {
+export function toAnthropicMessages(
+  messages: readonly ProviderMessage[],
+): Record<string, unknown>[] {
   const out: Record<string, unknown>[] = [];
   let pendingResults: Record<string, unknown>[] = [];
 

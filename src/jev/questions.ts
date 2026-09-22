@@ -7,7 +7,10 @@ import type { ChoiceQuestion, NoulQuestion, ScoreQuestion } from "../classify/ty
  */
 
 /** Is this statement true? Answered with a calibrated probability in [0,1]. */
-export function noul(instructions: string, criteria?: { true: string; false: string }): NoulQuestion {
+export function noul(
+  instructions: string,
+  criteria?: { true: string; false: string },
+): NoulQuestion {
   return { type: "noul", instructions, ...(criteria ? { criteria } : {}) };
 }
 

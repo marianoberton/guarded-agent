@@ -24,7 +24,7 @@ export class ToolInputError extends Error {
  * `readonly Tool[]` instead of a variance puzzle, and forces every call site
  * through `execute`, which validates before running.
  */
-export interface Tool {
+export interface Tool<A = unknown> {
   readonly name: string;
   readonly description: string;
   /**
@@ -33,6 +33,11 @@ export interface Tool {
    */
   readonly sideEffecting: boolean;
   readonly spec: ToolSpec;
+  /**
+   * Phantom. Never assigned at runtime — it exists so a policy handed this tool
+   * can infer the shape of its arguments without the caller restating it.
+   */
+  readonly argsType?: A;
   execute(rawArgs: unknown, ctx: ToolContext): Promise<string>;
 }
 
@@ -63,7 +68,7 @@ export function toInputSchema(schema: z.ZodType): Record<string, unknown> {
   return json;
 }
 
-export function defineTool<S extends z.ZodType>(def: ToolDefinition<S>): Tool {
+export function defineTool<S extends z.ZodType>(def: ToolDefinition<S>): Tool<z.output<S>> {
   const spec: ToolSpec = {
     name: def.name,
     description: def.description,
@@ -81,7 +86,9 @@ export function defineTool<S extends z.ZodType>(def: ToolDefinition<S>): Tool {
       if (!parsed.success) {
         throw new ToolInputError(
           def.name,
-          parsed.error.issues.map((i) => `${i.path.join(".") || "(root)"}: ${i.message}`).join("; "),
+          parsed.error.issues
+            .map((i) => `${i.path.join(".") || "(root)"}: ${i.message}`)
+            .join("; "),
         );
       }
       return def.run(parsed.data as z.output<S>, ctx);

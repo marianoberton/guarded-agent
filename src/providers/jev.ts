@@ -73,10 +73,15 @@ export class JevProvider {
     await this.limiter.acquire();
 
     const raw = await postJson(this.url, this.headers, this.payload(state, questions), this.retry);
-    const body = raw as { answers?: unknown; usage?: { input_tokens?: number; output_tokens?: number } };
+    const body = raw as {
+      answers?: unknown;
+      usage?: { input_tokens?: number; output_tokens?: number };
+    };
 
     if (!body.answers || typeof body.answers !== "object") {
-      throw new ProviderError(`Jev response had no "answers": ${JSON.stringify(raw).slice(0, 300)}`);
+      throw new ProviderError(
+        `Jev response had no "answers": ${JSON.stringify(raw).slice(0, 300)}`,
+      );
     }
 
     this.usage.inputTokens += body.usage?.input_tokens ?? 0;

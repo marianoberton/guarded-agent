@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  fromOpenRouterResponse,
-  toOpenRouterPayload,
-} from "../../src/providers/openrouter.js";
+import { fromOpenRouterResponse, toOpenRouterPayload } from "../../src/providers/openrouter.js";
 import { ProviderError } from "../../src/providers/types.js";
 import type { CompletionRequest } from "../../src/providers/types.js";
 

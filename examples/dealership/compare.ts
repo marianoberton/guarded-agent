@@ -63,11 +63,7 @@ async function main(): Promise<void> {
   printVerdict(rows);
 }
 
-async function runOne(
-  provider: OpenRouterProvider,
-  model: string,
-  question: string,
-): Promise<Row> {
+async function runOne(provider: OpenRouterProvider, model: string, question: string): Promise<Row> {
   const startedAt = Date.now();
   const base: Row = {
     model,
@@ -116,10 +112,9 @@ async function runOne(
   }
 }
 
-function totals(trace: readonly TraceEntry[]): Pick<
-  Row,
-  "inputTokens" | "outputTokens" | "costUsd"
-> {
+function totals(
+  trace: readonly TraceEntry[],
+): Pick<Row, "inputTokens" | "outputTokens" | "costUsd"> {
   let inputTokens = 0;
   let outputTokens = 0;
   let costUsd: number | null = null;

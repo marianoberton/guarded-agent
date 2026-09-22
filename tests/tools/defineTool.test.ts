@@ -6,7 +6,9 @@ const ctx = { conversationId: "c1", now: () => 0 };
 
 describe("toInputSchema", () => {
   it("emits an object schema that rejects unknown keys", () => {
-    const schema = toInputSchema(z.object({ model: z.string(), year: z.number().int().optional() }));
+    const schema = toInputSchema(
+      z.object({ model: z.string(), year: z.number().int().optional() }),
+    );
 
     expect(schema).toMatchObject({
       type: "object",

@@ -110,7 +110,10 @@ function coerceAnswers(questions: QuestionMap, raw: Record<string, unknown>): An
   const answers: Answers = {};
   for (const [key, question] of Object.entries(questions)) {
     const value = raw[key];
-    answers[key] = coerceAnswer(question, typeof value === "object" && value ? (value as Record<string, unknown>) : {});
+    answers[key] = coerceAnswer(
+      question,
+      typeof value === "object" && value ? (value as Record<string, unknown>) : {},
+    );
   }
   return answers;
 }
@@ -119,7 +122,11 @@ function coerceAnswer(question: Question, raw: Record<string, unknown>): Answer 
   const confidence = clamp01(raw["confidence"]);
   switch (question.type) {
     case "noul":
-      return { type: "noul", noul: clamp01(raw["noul"]), ...(confidence > 0 ? { confidence } : {}) };
+      return {
+        type: "noul",
+        noul: clamp01(raw["noul"]),
+        ...(confidence > 0 ? { confidence } : {}),
+      };
     case "choice": {
       const options = Object.keys(question.criteria);
       const picked = typeof raw["choice"] === "string" ? raw["choice"] : "";
@@ -130,7 +137,8 @@ function coerceAnswer(question: Question, raw: Record<string, unknown>): Answer 
       };
     }
     case "score": {
-      const n = typeof raw["score"] === "number" && Number.isFinite(raw["score"]) ? raw["score"] : 0;
+      const n =
+        typeof raw["score"] === "number" && Number.isFinite(raw["score"]) ? raw["score"] : 0;
       const max = Math.max(0, question.criteria.length - 1);
       return {
         type: "score",
@@ -142,7 +150,5 @@ function coerceAnswer(question: Question, raw: Record<string, unknown>): Answer 
 }
 
 function clamp01(value: unknown): number {
-  return typeof value === "number" && Number.isFinite(value)
-    ? Math.min(Math.max(value, 0), 1)
-    : 0;
+  return typeof value === "number" && Number.isFinite(value) ? Math.min(Math.max(value, 0), 1) : 0;
 }
