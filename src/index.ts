@@ -2,6 +2,8 @@
 export { runTurn, emptyConversation } from "./core/turn.js";
 export { TraceBuilder } from "./core/trace.js";
 export { explain, explainTurn } from "./core/explain.js";
+export { coalesce, createWorker } from "./core/worker.js";
+export type { Deliver, Worker, WorkerOptions } from "./core/worker.js";
 export {
   acceptHandoff,
   appendHumanMessage,
@@ -90,4 +92,15 @@ export * as jev from "./jev/index.js";
 
 // --- stores -------------------------------------------------------------------
 export { MemoryStore } from "./stores/memory.js";
-export type { Store, StoredTurn } from "./stores/types.js";
+export { PostgresStore, schemaSql } from "./stores/postgres/store.js";
+export type { PgQueryable } from "./stores/postgres/store.js";
+export type {
+  DequeueOptions,
+  EnqueueOptions,
+  FailOptions,
+  Job,
+  PendingMessage,
+  Queue,
+  Store,
+  StoredTurn,
+} from "./stores/types.js";

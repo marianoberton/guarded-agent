@@ -30,7 +30,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json && node scripts/copy-assets.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -39,7 +39,11 @@
     "example": "tsx examples/dealership/index.ts",
     "compare": "tsx examples/dealership/compare.ts",
     "ping": "tsx examples/jev-ping.ts",
-    "test:live": "vitest run --config vitest.live.config.ts"
+    "test:live": "vitest run --config vitest.live.config.ts",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down -v",
+    "test:db": "vitest run --config vitest.live.config.ts tests/stores",
+    "example:express": "tsx examples/express/index.ts"
   },
   "dependencies": {
     "zod": "^4.6.5"
@@ -52,6 +56,16 @@
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.18.1",
-    "vitest": "^2.1.8"
+    "vitest": "^2.1.8",
+    "pg": "^8.13.1",
+    "@types/pg": "^8.11.10"
+  },
+  "peerDependencies": {
+    "pg": "^8.13.0"
+  },
+  "peerDependenciesMeta": {
+    "pg": {
+      "optional": true
+    }
   }
 }
