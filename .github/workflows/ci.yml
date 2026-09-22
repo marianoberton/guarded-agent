@@ -1,0 +1,40 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: guarded
+          POSTGRES_PASSWORD: guarded
+          POSTGRES_DB: guarded_agent
+        ports: ["54329:5432"]
+        options: >-
+          --health-cmd "pg_isready -U guarded -d guarded_agent"
+          --health-interval 2s --health-timeout 3s --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npx prettier --check "src/**/*.ts" "examples/**/*.ts" "tests/**/*.ts"
+      # Offline: no network, no database, no API keys.
+      - run: npm test
+      # Integration: real Postgres, still no API keys.
+      - run: npm run test:db
+        env:
+          DATABASE_URL: postgres://guarded:guarded@localhost:54329/guarded_agent
+      - run: npm run build
+      # Fixtures must stay invented. See scripts/check-fixtures.mjs.
+      - run: node scripts/check-fixtures.mjs
