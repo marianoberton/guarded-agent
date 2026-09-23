@@ -11,6 +11,15 @@
     "guardrails",
     "policy"
   ],
+  "homepage": "https://github.com/marianoberton/guarded-agent#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marianoberton/guarded-agent.git"
+  },
+  "bugs": {
+    "url": "https://github.com/marianoberton/guarded-agent/issues"
+  },
+  "author": "Mariano Berton",
   "license": "MIT",
   "type": "module",
   "engines": {
