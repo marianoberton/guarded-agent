@@ -6,6 +6,8 @@
 
 A TypeScript runtime for conversational agents that run inside a real operation — where a wrong answer costs money, and "we told the model not to" is not a control.
 
+These are the patterns behind Raudo, a WhatsApp agent platform for car dealerships I'm building ([fomolabs.ai/labs/raudo](https://fomolabs.ai/labs/raudo)). The product stays private; the mechanisms are here, with invented data.
+
 ---
 
 Production agents fail in ways a prompt cannot prevent. They offer a discount the business will not honour. They reply outside the channel's legal send window. They keep talking when a person should have taken over. They call a destructive tool because, in context, the model judged it reasonable.
@@ -31,6 +33,8 @@ Every one of those is a decision. The usual design hands all of them to one larg
 │  only where the answer space is genuinely open                      │
 └─────────────────────────────────────────────────────────────────────┘
 ```
+
+Jev is TypeSafe AI's System One model ([typesafe.ai](https://typesafe.ai)): instead of writing text, it returns a typed decision — a choice, a score, or a yes/no as a calibrated probability — in ~400 ms.
 
 The middle tier is the part that is not obvious. Classification, escalation and risk assessment have small, knowable answer spaces — exactly where a System One decision model ([Jev](https://docs.typesafe.ai), via OpenRouter) belongs and a chat model is both overkill and unaccountable. It returns a calibrated probability instead of prose, so a threshold on it is a real gate rather than a vibe.
 
@@ -122,7 +126,7 @@ const worker = createWorker({
           asks_for_human: "Explicitly wants a person",
           other: "None of these",
         }),
-        needs_human: jev.noul("Should a human take this conversation now?"),
+        needs_human: jev.noul("Should a human take this conversation now?"), // noul = yes/no, returned as a probability in [0, 1]
       },
     }),
 
@@ -243,12 +247,14 @@ Three suites, each proving something the others cannot.
 ```bash
 npm test          # 158 tests · no network, no database, no API keys
 npm run test:db   #  11 tests · real Postgres via docker compose
-npm run test:live #   3 tests · real OpenRouter, costs about a cent
+npm run test:live #   5 tests · real OpenRouter and Anthropic, costs about a cent
 ```
 
 The offline suite runs entirely on injected stubs, so it is fast, free and deterministic — including the byte-for-byte trace comparison above. The Postgres suite exists because `SKIP LOCKED` cannot be proven in a single process against an in-memory fake. The live suite exists because a request shape that typechecks is not a request shape the API accepts.
 
 `node scripts/check-fixtures.mjs` runs in CI and fails the build on anything resembling a real phone number, email or API key. Every fixture in this repository is invented; no client data appears anywhere in it, including the git history.
+
+The behavioural suites under [`evals/`](evals/) run with [agent-evals](https://github.com/marianoberton/agent-evals): the same turns, scored by deterministic rules and a calibrated Jev judge, replayed from cassettes so CI never calls a model.
 
 ## Limits
 
@@ -263,7 +269,7 @@ The offline suite runs entirely on injected stubs, so it is fast, free and deter
 ```bash
 cp .env.example .env    # one OpenRouter key covers both the responder and Jev
 npm run example         # one turn, with explain() output
-npm run example -- "¿Me lo dejás en 15?"   # the escalation path
+npm run example -- "¿Me lo dejás en 15?"   # "Can you do 15?" — the escalation path
 npm run compare         # the same turn across four responders
 npm run ping            # smallest possible Jev check
 npm run db:up && npm run example:express   # webhook + worker + Postgres
@@ -277,6 +283,10 @@ npm run db:up && npm run example:express   # webhook + worker + Postgres
 | [POLICIES](docs/POLICIES.md)               | verdicts, ordering, and which half of the veto story to reach for |
 | [JEV](docs/JEV.md)                         | wire format, cost, and how to pick a threshold                    |
 | [WHATSAPP_WINDOW](docs/WHATSAPP_WINDOW.md) | the 24-hour rule and what happens outside it                      |
+
+## Related
+
+[agent-evals](https://github.com/marianoberton/agent-evals) — a test runner for LLM agents that produces a number you can gate a deploy on: deterministic scorers for the failures that reach production, and a calibrated Jev judge for the ones that need semantics. This runtime is its reference consumer.
 
 ## License
 
